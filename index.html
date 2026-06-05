@@ -27,8 +27,13 @@
         </div>
 
         <div class="avatar-column">
-          <div class="avatar-frame" aria-hidden="true">
-            <img src="assets/avatar-engineer.png" alt="">
+          <div class="avatar-frame">
+            <img id="profile-avatar" src="assets/avatar-engineer.png" alt="个人头像">
+          </div>
+          <div class="avatar-actions">
+            <input class="avatar-file-input" id="avatar-upload" type="file" accept="image/*" aria-label="上传头像">
+            <label class="avatar-upload-button" for="avatar-upload">上传头像</label>
+            <button class="avatar-reset-button" id="avatar-reset" type="button" hidden>恢复默认</button>
           </div>
           <div class="status-chip">
             <span class="status-dot"></span>
@@ -64,6 +69,27 @@
         </div>
       </section>
     </main>
+
+    <div class="crop-modal" id="avatar-crop-modal" hidden role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title">
+      <div class="crop-dialog">
+        <div class="crop-header">
+          <h2 id="avatar-crop-title">调整头像</h2>
+          <button class="crop-close-button" id="avatar-crop-close" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="crop-stage" id="avatar-crop-stage" aria-label="拖动照片调整头像位置">
+          <img id="avatar-crop-image" alt="">
+          <div class="crop-mask" aria-hidden="true"></div>
+        </div>
+        <label class="crop-scale-control">
+          缩放
+          <input id="avatar-crop-scale" type="range" min="1" max="3" step="0.01" value="1">
+        </label>
+        <div class="crop-actions">
+          <button class="crop-secondary-button" id="avatar-crop-cancel" type="button">取消</button>
+          <button class="crop-primary-button" id="avatar-crop-apply" type="button">使用头像</button>
+        </div>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>
