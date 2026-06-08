@@ -10,16 +10,16 @@ const buttons = Array.from(document.querySelectorAll(".theme-button"));
 const intro = document.querySelector(".intro");
 const avatar = document.querySelector("#profile-avatar");
 const avatarUpload = document.querySelector("#avatar-upload");
-const avatarReset = document.querySelector("#avatar-reset");
 const cropModal = document.querySelector("#avatar-crop-modal");
 const cropStage = document.querySelector("#avatar-crop-stage");
 const cropImage = document.querySelector("#avatar-crop-image");
-const cropScale = document.querySelector("#avatar-crop-scale");
 const cropClose = document.querySelector("#avatar-crop-close");
 const cropCancel = document.querySelector("#avatar-crop-cancel");
 const cropApply = document.querySelector("#avatar-crop-apply");
 
 let cropSession = null;
+const MIN_CROP_SCALE = 0.35;
+const MAX_CROP_SCALE = 5;
 
 function applyTheme(theme) {
   const nextTheme = themes.has(theme) ? theme : "minimal";
@@ -67,10 +67,6 @@ function setAvatar(src, isCustom) {
   }
 
   avatar.src = src;
-
-  if (avatarReset) {
-    avatarReset.hidden = !isCustom;
-  }
 }
 
 function readFileAsDataUrl(file) {
@@ -115,11 +111,54 @@ function getCropMetrics() {
 }
 
 function clampCropPosition(metrics) {
-  const maxX = Math.max(0, (metrics.width - metrics.stageSize) / 2);
-  const maxY = Math.max(0, (metrics.height - metrics.stageSize) / 2);
+  const maxX = Math.max(0, (metrics.width + metrics.stageSize) / 2);
+  const maxY = Math.max(0, (metrics.height + metrics.stageSize) / 2);
 
   cropSession.x = Math.min(maxX, Math.max(-maxX, cropSession.x));
   cropSession.y = Math.min(maxY, Math.max(-maxY, cropSession.y));
+}
+
+function zoomCrop(nextScale, centerX, centerY) {
+  if (!cropSession || !cropStage) {
+    return;
+  }
+
+  const rect = cropStage.getBoundingClientRect();
+  const centerOffsetX = centerX - rect.left - rect.width / 2;
+  const centerOffsetY = centerY - rect.top - rect.height / 2;
+  const previousScale = cropSession.scale;
+  const clampedScale = Math.min(MAX_CROP_SCALE, Math.max(MIN_CROP_SCALE, nextScale));
+  const scaleRatio = clampedScale / previousScale;
+
+  cropSession.x = centerOffsetX - (centerOffsetX - cropSession.x) * scaleRatio;
+  cropSession.y = centerOffsetY - (centerOffsetY - cropSession.y) * scaleRatio;
+  cropSession.scale = clampedScale;
+  renderCrop();
+}
+
+function getPointerDistance() {
+  if (!cropSession || cropSession.pointers.size < 2) {
+    return 0;
+  }
+
+  const points = Array.from(cropSession.pointers.values());
+  return Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+}
+
+function getPointerCenter() {
+  const points = Array.from(cropSession.pointers.values());
+  const total = points.reduce(
+    (sum, point) => ({
+      x: sum.x + point.x,
+      y: sum.y + point.y,
+    }),
+    { x: 0, y: 0 }
+  );
+
+  return {
+    x: total.x / points.length,
+    y: total.y / points.length,
+  };
 }
 
 function renderCrop() {
@@ -141,7 +180,7 @@ function renderCrop() {
 }
 
 function openCropModal(src, image) {
-  if (!cropModal || !cropImage || !cropScale) {
+  if (!cropModal || !cropImage) {
     return;
   }
 
@@ -152,14 +191,17 @@ function openCropModal(src, image) {
     x: 0,
     y: 0,
     isDragging: false,
+    isPinching: false,
     startX: 0,
     startY: 0,
     startOffsetX: 0,
     startOffsetY: 0,
+    pointers: new Map(),
+    pinchStartDistance: 0,
+    pinchStartScale: 1,
   };
 
   cropImage.src = src;
-  cropScale.value = "1";
   cropModal.hidden = false;
   document.body.classList.add("is-crop-open");
 
@@ -186,27 +228,22 @@ function createCroppedAvatar() {
     return null;
   }
 
+  const outputScale = CROP_OUTPUT_SIZE / metrics.stageSize;
   const imageLeft = metrics.stageSize / 2 + cropSession.x - metrics.width / 2;
   const imageTop = metrics.stageSize / 2 + cropSession.y - metrics.height / 2;
-  const sourceX = ((0 - imageLeft) / metrics.width) * metrics.naturalWidth;
-  const sourceY = ((0 - imageTop) / metrics.height) * metrics.naturalHeight;
-  const sourceWidth = (metrics.stageSize / metrics.width) * metrics.naturalWidth;
-  const sourceHeight = (metrics.stageSize / metrics.height) * metrics.naturalHeight;
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
 
   canvas.width = CROP_OUTPUT_SIZE;
   canvas.height = CROP_OUTPUT_SIZE;
+  context.fillStyle = "#f3f8fb";
+  context.fillRect(0, 0, CROP_OUTPUT_SIZE, CROP_OUTPUT_SIZE);
   context.drawImage(
     cropSession.image,
-    sourceX,
-    sourceY,
-    sourceWidth,
-    sourceHeight,
-    0,
-    0,
-    CROP_OUTPUT_SIZE,
-    CROP_OUTPUT_SIZE
+    imageLeft * outputScale,
+    imageTop * outputScale,
+    metrics.width * outputScale,
+    metrics.height * outputScale
   );
 
   return canvas.toDataURL("image/jpeg", 0.9);
@@ -240,35 +277,54 @@ if (avatarUpload) {
   });
 }
 
-if (avatarReset) {
-  avatarReset.addEventListener("click", () => {
-    localStorage.removeItem(AVATAR_STORAGE_KEY);
-    localStorage.removeItem(LEGACY_AVATAR_SETTINGS_STORAGE_KEY);
-    setAvatar(DEFAULT_AVATAR, false);
-
-    if (avatarUpload) {
-      avatarUpload.value = "";
-    }
-  });
-}
-
 if (cropStage) {
   cropStage.addEventListener("pointerdown", (event) => {
     if (!cropSession) {
       return;
     }
 
+    cropSession.pointers.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
     cropSession.isDragging = true;
     cropSession.startX = event.clientX;
     cropSession.startY = event.clientY;
     cropSession.startOffsetX = cropSession.x;
     cropSession.startOffsetY = cropSession.y;
+
+    if (cropSession.pointers.size === 2) {
+      cropSession.isPinching = true;
+      cropSession.pinchStartDistance = getPointerDistance();
+      cropSession.pinchStartScale = cropSession.scale;
+    }
+
     cropStage.classList.add("is-dragging");
     cropStage.setPointerCapture(event.pointerId);
   });
 
   cropStage.addEventListener("pointermove", (event) => {
-    if (!cropSession || !cropSession.isDragging) {
+    if (!cropSession || !cropSession.pointers.has(event.pointerId)) {
+      return;
+    }
+
+    cropSession.pointers.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    if (cropSession.isPinching && cropSession.pointers.size >= 2) {
+      const distance = getPointerDistance();
+      const center = getPointerCenter();
+
+      if (cropSession.pinchStartDistance > 0) {
+        zoomCrop(cropSession.pinchStartScale * (distance / cropSession.pinchStartDistance), center.x, center.y);
+      }
+
+      return;
+    }
+
+    if (!cropSession.isDragging) {
       return;
     }
 
@@ -282,7 +338,9 @@ if (cropStage) {
       return;
     }
 
+    cropSession.pointers.delete(event.pointerId);
     cropSession.isDragging = false;
+    cropSession.isPinching = false;
     cropStage.classList.remove("is-dragging");
 
     if (cropStage.hasPointerCapture(event.pointerId)) {
@@ -292,17 +350,16 @@ if (cropStage) {
 
   cropStage.addEventListener("pointerup", stopDragging);
   cropStage.addEventListener("pointercancel", stopDragging);
-}
 
-if (cropScale) {
-  cropScale.addEventListener("input", () => {
+  cropStage.addEventListener("wheel", (event) => {
     if (!cropSession) {
       return;
     }
 
-    cropSession.scale = Number(cropScale.value) || 1;
-    renderCrop();
-  });
+    event.preventDefault();
+    const zoomFactor = event.deltaY < 0 ? 1.08 : 0.92;
+    zoomCrop(cropSession.scale * zoomFactor, event.clientX, event.clientY);
+  }, { passive: false });
 }
 
 if (cropApply) {

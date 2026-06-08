@@ -1,9 +1,13 @@
 :root {
   color-scheme: light;
   --page-bg:
+    linear-gradient(rgba(248, 250, 253, 0.52), rgba(248, 250, 253, 0.52)),
+    url("assets/bg-minimal-tech.svg?v=2") center / cover no-repeat,
     radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.95), transparent 30%),
     linear-gradient(135deg, #f8f9fb 0%, #edf0f4 48%, #f7f8fa 100%);
-  --card-bg: rgba(255, 255, 255, 0.78);
+  --tech-bg-image: url("assets/bg-minimal-tech.svg?v=2");
+  --tech-bg-opacity: 0.68;
+  --card-bg: rgba(255, 255, 255, 0.64);
   --card-border: rgba(18, 24, 38, 0.1);
   --text: #121826;
   --muted: #5f6978;
@@ -20,9 +24,13 @@
 body[data-theme="space"] {
   color-scheme: dark;
   --page-bg:
+    linear-gradient(rgba(5, 8, 16, 0.2), rgba(5, 8, 16, 0.2)),
+    url("assets/bg-space-tech.svg?v=2") center / cover no-repeat,
     radial-gradient(circle at 20% 18%, rgba(51, 96, 255, 0.28), transparent 28%),
     linear-gradient(145deg, #080b12 0%, #141822 48%, #05070c 100%);
-  --card-bg: rgba(19, 24, 35, 0.76);
+  --tech-bg-image: url("assets/bg-space-tech.svg?v=2");
+  --tech-bg-opacity: 0.74;
+  --card-bg: rgba(19, 24, 35, 0.62);
   --card-border: rgba(255, 255, 255, 0.12);
   --text: #f5f7fb;
   --muted: #aab4c4;
@@ -38,9 +46,13 @@ body[data-theme="space"] {
 
 body[data-theme="survey"] {
   --page-bg:
+    linear-gradient(rgba(237, 248, 255, 0.48), rgba(237, 248, 255, 0.48)),
+    url("assets/bg-survey-tech.svg?v=2") center / cover no-repeat,
     radial-gradient(circle at 12% 16%, rgba(194, 230, 255, 0.85), transparent 28%),
     linear-gradient(135deg, #edf8ff 0%, #eaf1fb 50%, #fbfcff 100%);
-  --card-bg: rgba(255, 255, 255, 0.8);
+  --tech-bg-image: url("assets/bg-survey-tech.svg?v=2");
+  --tech-bg-opacity: 0.72;
+  --card-bg: rgba(255, 255, 255, 0.64);
   --card-border: rgba(30, 88, 142, 0.14);
   --text: #102033;
   --muted: #536979;
@@ -56,9 +68,13 @@ body[data-theme="survey"] {
 
 body[data-theme="map"] {
   --page-bg:
+    linear-gradient(rgba(243, 250, 244, 0.5), rgba(243, 250, 244, 0.5)),
+    url("assets/bg-map-tech.svg?v=2") center / cover no-repeat,
     radial-gradient(circle at 16% 18%, rgba(214, 244, 221, 0.95), transparent 28%),
     linear-gradient(135deg, #f3faf4 0%, #e8f1eb 45%, #f8faf6 100%);
-  --card-bg: rgba(255, 255, 255, 0.78);
+  --tech-bg-image: url("assets/bg-map-tech.svg?v=2");
+  --tech-bg-opacity: 0.72;
+  --card-bg: rgba(255, 255, 255, 0.64);
   --card-border: rgba(42, 95, 69, 0.14);
   --text: #122318;
   --muted: #53675a;
@@ -87,6 +103,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Microsoft YaHei", sans-serif;
   color: var(--text);
   background: var(--page-bg);
+  background-attachment: fixed;
   transition: background 260ms ease, color 260ms ease;
 }
 
@@ -128,9 +145,23 @@ a {
   border-radius: 20px;
 }
 
+.profile-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    var(--tech-bg-image) center / cover no-repeat,
+    linear-gradient(110deg, transparent 0 34%, rgba(255, 255, 255, 0.18) 42%, transparent 50%),
+    radial-gradient(circle at 24% 20%, var(--accent-soft), transparent 32%),
+    radial-gradient(circle at 82% 76%, var(--accent-soft), transparent 28%);
+  opacity: var(--tech-bg-opacity);
+}
+
 .theme-panel {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   top: 24px;
   right: 24px;
   display: flex;
@@ -167,7 +198,7 @@ a {
 
 .avatar-column {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   justify-items: center;
   gap: 24px;
@@ -210,8 +241,7 @@ a {
   clip-path: inset(50%);
 }
 
-.avatar-upload-button,
-.avatar-reset-button {
+.avatar-upload-button {
   min-height: 38px;
   display: inline-flex;
   align-items: center;
@@ -231,14 +261,7 @@ a {
   box-shadow: 0 12px 28px color-mix(in srgb, var(--accent-strong) 24%, transparent);
 }
 
-.avatar-reset-button {
-  border: 1px solid var(--secondary-border);
-  color: var(--muted);
-  background: var(--secondary-bg);
-}
-
-.avatar-upload-button:hover,
-.avatar-reset-button:hover {
+.avatar-upload-button:hover {
   transform: translateY(-1px);
 }
 
@@ -270,7 +293,7 @@ a {
 
 .profile-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .eyebrow {
@@ -505,22 +528,6 @@ body.is-crop-open {
   border: 2px solid rgba(255, 255, 255, 0.92);
   border-radius: 50%;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
-}
-
-.crop-scale-control {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.crop-scale-control input {
-  width: 100%;
-  accent-color: var(--accent);
-  cursor: pointer;
 }
 
 .crop-actions {

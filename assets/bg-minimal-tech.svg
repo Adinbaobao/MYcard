@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fafdff"/>
+      <stop offset="0.5" stop-color="#eaf4ff"/>
+      <stop offset="1" stop-color="#f8fbff"/>
+    </linearGradient>
+    <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse">
+      <path d="M56 0H0V56" fill="none" stroke="#1685ff" stroke-width="1.2" opacity="0.28"/>
+      <path d="M28 0V56M0 28H56" fill="none" stroke="#1685ff" stroke-width="0.8" opacity="0.14"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="46%" r="58%">
+      <stop offset="0" stop-color="#0a84ff" stop-opacity="0.28"/>
+      <stop offset="0.58" stop-color="#57c7ff" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#57c7ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#grid)"/>
+  <circle cx="800" cy="460" r="600" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round">
+    <ellipse cx="800" cy="470" rx="520" ry="190" stroke="#0a84ff" stroke-width="3" opacity="0.22" transform="rotate(-11 800 470)"/>
+    <ellipse cx="800" cy="470" rx="360" ry="128" stroke="#2fb6ff" stroke-width="2" opacity="0.2" transform="rotate(18 800 470)"/>
+    <path d="M145 745 C320 605 455 635 615 540 C780 442 955 485 1115 380 C1260 285 1390 275 1510 340" stroke="#0a84ff" stroke-width="3" opacity="0.3"/>
+    <path d="M180 285 L385 215 L590 315 L795 238 L1010 340 L1215 245 L1430 310" stroke="#0077ff" stroke-width="2.6" opacity="0.34"/>
+    <path d="M185 835 L395 675 L610 730 L825 565 L1045 625 L1255 475 L1455 540" stroke="#00a3ff" stroke-width="2.6" opacity="0.3"/>
+  </g>
+  <g fill="#0a84ff">
+    <circle cx="385" cy="215" r="7" opacity="0.72"/>
+    <circle cx="590" cy="315" r="7" opacity="0.72"/>
+    <circle cx="795" cy="238" r="7" opacity="0.72"/>
+    <circle cx="1010" cy="340" r="7" opacity="0.72"/>
+    <circle cx="1215" cy="245" r="7" opacity="0.72"/>
+    <circle cx="825" cy="565" r="6" opacity="0.65"/>
+    <circle cx="1045" cy="625" r="6" opacity="0.65"/>
+    <circle cx="1255" cy="475" r="6" opacity="0.65"/>
+  </g>
+  <g fill="none" stroke="#0a84ff" stroke-width="1.6" opacity="0.28">
+    <circle cx="1180" cy="430" r="96"/>
+    <circle cx="1180" cy="430" r="160"/>
+    <path d="M980 430H1380M1180 230V630"/>
+  </g>
+</svg>
